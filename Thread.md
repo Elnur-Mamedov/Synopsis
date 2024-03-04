@@ -2,7 +2,7 @@
 
 Этот класс позволяет обращаться к ядру ОС и создавать потоки выполнения.
 
-4 перегрузки
+4 перегрузки конструктора
 - ThreadStart
 - ParameterizedThreadStart
 - ThreadStart + MaxStackSize
@@ -38,10 +38,32 @@ ThreadStart action = new(() =>
 	Console.WriteLine("Hello, world!");
 });
 
+ThreadStart action2 = new(() =>
+{
+	Console.WriteLine("Hello, world!");
+});
+
 Thread th1 = new(action);
 
+th1 = new Thread(action2); //Это уже новый поток
+
+th1.Start();
 ```
 
+``` csharp
+ParameterizedThreadStart  action = new((object obj) =>
+{
+	Console.WriteLine("Hello, world!");
+});
 
+// Он был создан до того как был создан generic 
+// поэтому он принимает только object
+```
 
+Thread.CurrentThread.ManagedThreadId 
+показывает Id нынешнего потока.
 
+Main thread выше приоритет.
+
+Когда два или несколько потока когда работают, выполняется тот кто первый успел,
+они работают конкурентно.
