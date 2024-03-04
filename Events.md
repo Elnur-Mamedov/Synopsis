@@ -23,10 +23,86 @@
 
 
 `Mutex`
+ќн не скрывает работу, он говорит что € работаю с одним потоком, сообщает 
+OS с кем он работает и OS знает какой поток пуст, а какой нет.
+
+`Lock` работает на уровне .NET 
+а `Mutex` и `Semaphore` на уровне OS 
+
+`ƒл€ чего мы управл€ем потоками?`
+
+в 99% мы ими не управл€ем, но иногда нам нужно вручную их создавать.
+Ќапример если нам нужно что бы прога быстро работала или что-то св€занное
+с серверами.
+
+¬ 90% все происходит `јсинхронно`
+
+`Semaphore`
+
+¬ отличии от `Mutex` принимает два параметра
+- ѕервый `InitialCount`
+по дефолту сколько нужно впустить потоков дл€ выполнени€ задачи
+- ¬торой `MaximumCount` и сколько максимум может впустить.
+
+`Semaphore` - это несколько `Mutex`
+
+ќн может впускать сразу несколько потоков.
+
+ƒопустим параметры сто€т (2,3), то он впустит два потока и запустит их одновременно
+а 3 поток будет в ожидании.
+
+### —об€ти€ блокировки
+
+- `CountDownEvent`
+- `ManualResetEvent`
+- `AutoResetEvent`
 
 
+Ёто все соб€ти€ блокировки, которые блокируют поток.
+ѕотока останавливает свою работу, пока событие не возобновит работу потока.
 
+—обыти€ не имеют ни какой св€зи с `Lock`, `Mutex` и тд.
 
+ѕриве с `CountDownEvent`
 
+``` csharp
+class Program
+{
+    private static CountdownEvent countdownEvent = new(5); 5 - сколько сигналов должно быть что бы поток возобновилс€
 
+    public static void Sample()
+    {
+        using Mutex mutex = new();
+        mutex.WaitOne();
 
+        for (int i = 0; i < 5; i++)
+        {
+            Console.WriteLine($"Hello from: {Thread.CurrentThread.ManagedThreadId}");
+        }
+
+        countdownEvent.Signal();
+
+        `ќн уменьшает 5 на один, сигнал 
+        —игнал возвращает bool, если он вернул true, то он отнимает от 5 один, а если false
+        то Wait() возобновл€ет свою работу`
+
+        mutex.ReleaseMutex();
+    }
+
+    public static void Main(string[] args)
+    {
+        Console.WriteLine("Main started");
+
+        for (int i = 0; i < 5; i++)
+        {
+            Thread th1 = new(Sample);
+            th1.Start();
+        }
+
+        countdownEvent.Wait(); останавливает поток, в данном случаи main поток
+
+        Console.WriteLine("Main finished");
+    }
+}
+
+```
